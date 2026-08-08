@@ -2,9 +2,8 @@ name: Archive update
 
 on:
   schedule:
-    - cron: '2 8 * * *'  # 8:02 UTC
-#    - cron: '*/10 * * * *'
-  workflow_dispatch:
+    - cron: '2 8 * * *'  # 每天 8:02 UTC 自动运行
+  workflow_dispatch:      # 支持手动触发
 
 permissions:
   contents: write
@@ -35,56 +34,53 @@ jobs:
         working-directory: src
         run: pip install -r requirements.txt
 
-      - name: Install Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-          cache-dependency-path: src/website/package-lock.json
-
-      - name: Install Node.js dependencies
-        working-directory: src/website
-        run: npm ci
-
       # ----------------------------------------------------------------------------------------------------------------
-
+      # ★★★ 核心：抓取壁纸（不需要任何 Cloudflare 环境变量） ★★★
+      # ----------------------------------------------------------------------------------------------------------------
       - name: Update archive
         working-directory: src
         run: python bing.py
-        env:
-          CLOUDFLARE_ACCOUNT_ID: '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'
-          CLOUDFLARE_R2_ACCESS_KEY_ID: '${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}'
-          CLOUDFLARE_R2_API_TOKEN: '${{ secrets.CLOUDFLARE_R2_API_TOKEN }}'
+        # 如果 bing.py 需要 R2 相关的环境变量，可以在这里注释掉或移除
+        # 如果 bing.py 不依赖 R2，直接删掉 env 部分
+        # env:
+        #   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        #   CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+        #   CLOUDFLARE_R2_API_TOKEN: ${{ secrets.CLOUDFLARE_R2_API_TOKEN }}
 
       # ----------------------------------------------------------------------------------------------------------------
+      # ★★★ 如果你不需要构建和部署网站，可以删除下面两个步骤 ★★★
+      # ----------------------------------------------------------------------------------------------------------------
+      # - name: Build website
+      #   working-directory: src/website
+      #   run: npm run build
 
-      - name: Build website
-        working-directory: src/website
-        run: npm run build
-
-      - name: Deploy website
-        working-directory: src/website
-        run: npx wrangler deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKERS_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # - name: Deploy website
+      #   working-directory: src/website
+      #   run: npx wrangler deploy
+      #   env:
+      #     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      #     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       # ----------------------------------------------------------------------------------------------------------------
+      # ★★★ 如果你不需要更新 README，可以删除这个步骤 ★★★
+      # ----------------------------------------------------------------------------------------------------------------
+      # - name: Update README
+      #   working-directory: src
+      #   run: python update_readme.py
+      #   env:
+      #     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      #     CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+      #     CLOUDFLARE_R2_API_TOKEN: ${{ secrets.CLOUDFLARE_R2_API_TOKEN }}
 
-      - name: Update README
-        working-directory: src
-        run: python update_readme.py
-        env:
-          CLOUDFLARE_ACCOUNT_ID: '${{ secrets.CLOUDFLARE_ACCOUNT_ID }}'
-          CLOUDFLARE_R2_ACCESS_KEY_ID: '${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}'
-          CLOUDFLARE_R2_API_TOKEN: '${{ secrets.CLOUDFLARE_R2_API_TOKEN }}'
-
+      # ----------------------------------------------------------------------------------------------------------------
+      # ★★★ 提交更新到 GitHub ★★★
+      # ----------------------------------------------------------------------------------------------------------------
       - name: Get previous commit author
         id: previous_commit
-        run: echo "PREVIOUS_COMMIT_AUHOUR=$(git log -1 --pretty=%an)" >> "$GITHUB_OUTPUT"
+        run: echo "PREVIOUS_COMMIT_AUTHOR=$(git log -1 --pretty=%an)" >> "$GITHUB_OUTPUT"
 
       - name: Commit and push changes (amend previous update)
-        if: ${{ steps.previous_commit.outputs.PREVIOUS_COMMIT_AUHOUR == 'GitHub Actions' }}
+        if: ${{ steps.previous_commit.outputs.PREVIOUS_COMMIT_AUTHOR == 'GitHub Actions' }}
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Archive update
@@ -96,24 +92,10 @@ jobs:
           skip_fetch: true
 
       - name: Commit and push changes
-        if: ${{ steps.previous_commit.outputs.PREVIOUS_COMMIT_AUHOUR != 'GitHub Actions' }}
+        if: ${{ steps.previous_commit.outputs.PREVIOUS_COMMIT_AUTHOR != 'GitHub Actions' }}
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Archive update
           commit_user_name: GitHub Actions
           commit_author: GitHub Actions <41898282+github-actions[bot]@users.noreply.github.com>
           file_pattern: 'api/* README.md'
-
-      # ----------------------------------------------------------------------------------------------------------------
-
-      - name: Notify Telegram on failure
-        if: failure()
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
-            --data-urlencode "parse_mode=HTML" \
-            --data-urlencode "disable_web_page_preview=true" \
-            --data-urlencode "text=❌ <b>${GITHUB_WORKFLOW}</b> failed on <code>${GITHUB_REF_NAME}</code>%0A<a href=\"${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\">View run</a>"
