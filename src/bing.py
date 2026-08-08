@@ -2,6 +2,7 @@ import dataclasses
 import datetime
 import os
 import shutil
+import posixpath  # ★★★ 标准库 posixpath ★★★
 from shutil import rmtree
 from typing import Any, Iterable
 
@@ -10,7 +11,7 @@ from ApiPostprocessor import postprocessor
 from Region import REGIONS, Region
 from bing_utils import extract_base_url, get_uhd_url
 from structures import ApiEntry, DATE_FORMAT
-from system_utils import mkpath, posixpath, warn, fetch_json
+from system_utils import mkpath, warn, fetch_json  # ★★★ 移除 posixpath ★★★
 
 # ★★★ 修改：尝试导入 R2，失败则禁用 ★★★
 try:
@@ -143,7 +144,6 @@ def upload_image(region: Region, date: datetime.date, bing_url: str) -> str:
             print(f'⚠️ R2 上传失败: {e}，使用本地路径')
 
     # ★★★ 返回本地路径（相对于仓库根目录） ★★★
-    # 修复：使用 posixpath.join() 而不是 posixpath()
     relative_path = posixpath.join('api', 'images', region.api_country.upper(), region.api_lang.lower(), filename)
     print(f'📁 返回相对路径: {relative_path}')
     return relative_path
