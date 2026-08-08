@@ -1125,176 +1125,190 @@
             return originalUrl;
         }
 
-        // ============================================================
-        // 6.2 加载数据
-        // ============================================================
-        async function loadData(region) {
-            if (!region) region = currentRegion;
-            currentRegion = region;
+       // ============================================================
+// 6.2 加载数据 - ★★★ 生成 400x240 缩略图 ★★★
+// ============================================================
+async function loadData(region) {
+    if (!region) region = currentRegion;
+    currentRegion = region;
 
-            showProgress();
-            grid.innerHTML = '<div class="loading-indicator" style="flex:0 0 100%;padding:40px 0;"><i class="fas fa-spinner"></i> 加载 ' + region + ' 壁纸...</div>';
+    showProgress();
+    grid.innerHTML = '<div class="loading-indicator" style="flex:0 0 100%;padding:40px 0;"><i class="fas fa-spinner"></i> 加载 ' + region + ' 壁纸...</div>';
 
-            try {
-                var url = 'https://raw.githubusercontent.com/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive/master/api/' + region + '.json';
-                console.log('📡 请求数据:', url);
+    try {
+        // ★★★ 使用 CDN 加速 ★★★
+        var url = 'https://cdn.jsdelivr.net/gh/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive@master/api/' + region + '.json';
+        console.log('📡 请求数据 (CDN):', url);
 
-                var res = await fetch(url);
-                if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请检查地区文件是否存在');
-                var rawData = await res.json();
+        var res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请检查地区文件是否存在');
+        var rawData = await res.json();
 
-                if (!Array.isArray(rawData) || rawData.length === 0) {
-                    showEmpty('该地区暂无壁纸数据');
-                    hideProgress();
-                    return;
-                }
-
-                // ★★★ 转换数据格式，生成缩略图 ★★★
-                allData = rawData.map(function(item) {
-                    var originalUrl = item.url || '';
-                    // 生成缩略图：使用原图，服务端会自动缩放
-                    var thumbUrl = originalUrl;
-                    // 如果原图是 bing.npanuhin.me 的，可以用原图作为缩略图
-                    // 实际加载时浏览器会自适应
-                    if (originalUrl.indexOf('bing.npanuhin.me') !== -1) {
-                        thumbUrl = originalUrl;
-                    }
-                    
-                    return {
-                        date: item.date || '',
-                        copyright: item.copyright || '',
-                        title: item.title || item.caption || '',
-                        caption: item.caption || '',
-                        subtitle: item.subtitle || '',
-                        description: item.description || '',
-                        // ★★★ 图片URL ★★★
-                        jpg: originalUrl,
-                        thumb: thumbUrl,
-                        urls: {
-                            uhd: originalUrl,
-                            fhd: originalUrl,
-                            hd: originalUrl,
-                            thumb: thumbUrl
-                        }
-                    };
-                });
-
-                allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
-
-                filteredData = [];
-                totalNavCount.textContent = allData.length;
-                totalPages = Math.ceil(allData.length / PAGE_SIZE);
-                currentPage = 1;
-                hasMore = true;
-                grid.innerHTML = '';
-                renderPage(1);
-                hideProgress();
-
-                var regionLabel = regionSelect.options[regionSelect.selectedIndex]?.text || region;
-                console.log('✅ 已加载 ' + regionLabel + ' (' + allData.length + ' 张)');
-
-            } catch (err) {
-                console.error('加载失败:', err);
-                showEmpty('加载失败: ' + err.message);
-                hideProgress();
-            }
+        if (!Array.isArray(rawData) || rawData.length === 0) {
+            showEmpty('该地区暂无壁纸数据');
+            hideProgress();
+            return;
         }
 
-        // ============================================================
-        // 6.3 ★★★ 渲染页面 - 使用缩略图 ★★★
-        // ============================================================
-        function renderPage(page) {
-            var data = filteredData.length > 0 ? filteredData : allData;
-            totalPages = Math.ceil(data.length / PAGE_SIZE);
-            if (page < 1) page = 1;
-            if (page > totalPages) {
-                hasMore = false;
-                showNoMore();
-                return;
-            }
-            currentPage = page;
-            var start = (page - 1) * PAGE_SIZE;
-            var end = Math.min(start + PAGE_SIZE, data.length);
-            var items = data.slice(start, end);
-
-            if (items.length === 0) {
-                hasMore = false;
-                showNoMore();
-                return;
-            }
-
-            var loadingEl = document.querySelector('.loading-indicator');
-            if (loadingEl) loadingEl.remove();
-
-            items.forEach(function(item) {
-                var card = document.createElement('div');
-                card.className = 'card';
-
-                // ★★★ 使用缩略图 ★★★
-                var thumbUrl = item.thumb || item.jpg || '';
-                var fullUrl = item.jpg || '';
-
-                card.innerHTML =
-                    '<div class="placeholder-bg" style="background-image: url(' + thumbUrl + ');"></div>' +
-                    '<img src="' + thumbUrl + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
-                    '<div class="info">' +
-                    '<div class="date">' + item.date + '</div>' +
-                    '<div class="title">' + (item.title || item.copyright || '无标题') + '</div>' +
-                    '<div class="copyright">' + (item.copyright || '') + '</div>' +
-                    '</div>';
-
-                var img = card.querySelector('img');
-                var placeholderBg = card.querySelector('.placeholder-bg');
-
-                img.addEventListener('load', function() {
-                    img.classList.add('loaded');
-                    placeholderBg.classList.add('hidden');
-                });
-                if (img.complete) {
-                    img.classList.add('loaded');
-                    placeholderBg.classList.add('hidden');
-                }
-
-                // ★★★ 如果缩略图加载失败，尝试加载原图 ★★★
-                img.addEventListener('error', function() {
-                    if (this.src === thumbUrl && fullUrl && fullUrl !== thumbUrl) {
-                        this.src = fullUrl;
-                        console.log('🔄 缩略图降级为原图:', item.date);
-                        return;
-                    }
-                    this.classList.add('loaded');
-                    placeholderBg.classList.add('hidden');
-                    console.warn('❌ 图片加载失败:', item.date);
-                });
-
-                card.addEventListener('click', function() {
-                    var targetIndex = -1;
-                    for (var i = 0; i < allData.length; i++) {
-                        if (allData[i].date === item.date) {
-                            targetIndex = i;
-                            break;
-                        }
-                    }
-                    if (targetIndex === -1) return;
-                    openPreview(targetIndex);
-                });
-
-                grid.appendChild(card);
-            });
-
-            if (page < totalPages) {
-                var loadingDiv = document.createElement('div');
-                loadingDiv.className = 'loading-indicator';
-                loadingDiv.id = 'loadingIndicator';
-                loadingDiv.innerHTML = '<i class="fas fa-spinner"></i> 加载更多...';
-                grid.appendChild(loadingDiv);
+        // ★★★ 转换数据格式，生成缩略图 ★★★
+        allData = rawData.map(function(item) {
+            var originalUrl = item.url || '';
+            var bingUrl = item.bing_url || '';
+            
+            // ★★★ 生成 400x240 缩略图 ★★★
+            var thumbUrl = '';
+            if (bingUrl && bingUrl.indexOf('th?id=') !== -1) {
+                // 从 Bing URL 生成缩略图
+                var baseUrl = bingUrl.split('&')[0];
+                thumbUrl = baseUrl + '&w=400&h=240';
+            } else if (originalUrl && originalUrl.indexOf('bing.npanuhin.me') !== -1) {
+                // 如果是 npanuhin 的图片，尝试添加缩略图参数（可能不支持）
+                thumbUrl = originalUrl;
             } else {
-                hasMore = false;
-                showNoMore();
+                thumbUrl = originalUrl;
             }
 
-            isLoading = false;
+            return {
+                date: item.date || '',
+                copyright: item.copyright || '',
+                title: item.title || item.caption || '',
+                caption: item.caption || '',
+                subtitle: item.subtitle || '',
+                description: item.description || '',
+                // ★★★ 原图 URL ★★★
+                jpg: originalUrl,
+                // ★★★ 缩略图 URL (400x240) ★★★
+                thumb: thumbUrl,
+                // ★★★ 备用缩略图：如果原始图不支持缩略图参数，用原图 ★★★
+                thumb_fallback: originalUrl,
+                urls: {
+                    uhd: originalUrl,
+                    fhd: originalUrl,
+                    hd: originalUrl,
+                    thumb: thumbUrl
+                }
+            };
+        });
+
+        allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
+
+        filteredData = [];
+        totalNavCount.textContent = allData.length;
+        totalPages = Math.ceil(allData.length / PAGE_SIZE);
+        currentPage = 1;
+        hasMore = true;
+        grid.innerHTML = '';
+        renderPage(1);
+        hideProgress();
+
+        var regionLabel = regionSelect.options[regionSelect.selectedIndex]?.text || region;
+        console.log('✅ 已加载 ' + regionLabel + ' (' + allData.length + ' 张)');
+
+    } catch (err) {
+        console.error('加载失败:', err);
+        showEmpty('加载失败: ' + err.message);
+        hideProgress();
+    }
+}
+
+// ============================================================
+// 6.3 ★★★ 渲染页面 - 使用 400x240 缩略图 ★★★
+// ============================================================
+function renderPage(page) {
+    var data = filteredData.length > 0 ? filteredData : allData;
+    totalPages = Math.ceil(data.length / PAGE_SIZE);
+    if (page < 1) page = 1;
+    if (page > totalPages) {
+        hasMore = false;
+        showNoMore();
+        return;
+    }
+    currentPage = page;
+    var start = (page - 1) * PAGE_SIZE;
+    var end = Math.min(start + PAGE_SIZE, data.length);
+    var items = data.slice(start, end);
+
+    if (items.length === 0) {
+        hasMore = false;
+        showNoMore();
+        return;
+    }
+
+    var loadingEl = document.querySelector('.loading-indicator');
+    if (loadingEl) loadingEl.remove();
+
+    items.forEach(function(item) {
+        var card = document.createElement('div');
+        card.className = 'card';
+
+        // ★★★ 使用缩略图 ★★★
+        var thumbUrl = item.thumb || item.jpg || '';
+        var fullUrl = item.jpg || '';
+        var fallbackUrl = item.thumb_fallback || fullUrl;
+
+        card.innerHTML =
+            '<div class="placeholder-bg" style="background-image: url(' + thumbUrl + ');"></div>' +
+            '<img src="' + thumbUrl + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
+            '<div class="info">' +
+            '<div class="date">' + item.date + '</div>' +
+            '<div class="title">' + (item.title || item.copyright || '无标题') + '</div>' +
+            '<div class="copyright">' + (item.copyright || '') + '</div>' +
+            '</div>';
+
+        var img = card.querySelector('img');
+        var placeholderBg = card.querySelector('.placeholder-bg');
+
+        img.addEventListener('load', function() {
+            img.classList.add('loaded');
+            placeholderBg.classList.add('hidden');
+        });
+        if (img.complete && img.naturalWidth > 0) {
+            img.classList.add('loaded');
+            placeholderBg.classList.add('hidden');
         }
+
+        // ★★★ 缩略图加载失败，降级到原图 ★★★
+        img.addEventListener('error', function() {
+            var currentSrc = this.src;
+            if (currentSrc === thumbUrl && fallbackUrl && fallbackUrl !== thumbUrl) {
+                console.log('🔄 缩略图降级为原图:', item.date);
+                this.src = fallbackUrl;
+                return;
+            }
+            // 如果原图也失败，显示占位
+            this.classList.add('loaded');
+            placeholderBg.classList.add('hidden');
+            console.warn('❌ 图片加载失败:', item.date);
+        });
+
+        card.addEventListener('click', function() {
+            var targetIndex = -1;
+            for (var i = 0; i < allData.length; i++) {
+                if (allData[i].date === item.date) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+            if (targetIndex === -1) return;
+            openPreview(targetIndex);
+        });
+
+        grid.appendChild(card);
+    });
+
+    if (page < totalPages) {
+        var loadingDiv = document.createElement('div');
+        loadingDiv.className = 'loading-indicator';
+        loadingDiv.id = 'loadingIndicator';
+        loadingDiv.innerHTML = '<i class="fas fa-spinner"></i> 加载更多...';
+        grid.appendChild(loadingDiv);
+    } else {
+        hasMore = false;
+        showNoMore();
+    }
+
+    isLoading = false;
+}
 
         // ============================================================
         // 6.4 加载更多
