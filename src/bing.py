@@ -110,7 +110,7 @@ def add_entry(api_by_date: dict[datetime.date, ApiEntry], new_entry: ApiEntry) -
     return bool(updates)
 
 
-# ★★★ 修改：上传图片函数 - 支持本地存储和 R2 ★★★
+# ★★★ 上传图片函数 - 支持本地存储和 R2 ★★★
 def upload_image(region: Region, date: datetime.date, bing_url: str) -> str:
     filename = date.strftime(DATE_FORMAT) + '.jpg'
     temp_image_path = mkpath('_temp', filename)
@@ -120,8 +120,9 @@ def upload_image(region: Region, date: datetime.date, bing_url: str) -> str:
         file.write(content)
 
     # ★★★ 本地存储路径 ★★★
-    local_path = mkpath('api', 'images', region.api_country.upper(), region.api_lang.lower(), filename)
-    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    local_dir = mkpath('api', 'images', region.api_country.upper(), region.api_lang.lower())
+    os.makedirs(local_dir, exist_ok=True)
+    local_path = os.path.join(local_dir, filename)
 
     # 复制图片到本地
     shutil.copy2(temp_image_path, local_path)
@@ -130,7 +131,7 @@ def upload_image(region: Region, date: datetime.date, bing_url: str) -> str:
     # ★★★ 如果 R2 可用，也上传到 R2 ★★★
     if storage is not None:
         try:
-            r2_path = posixpath(mkpath(region.api_country.upper(), region.api_lang.lower(), filename))
+            r2_path = posixpath.join(region.api_country.upper(), region.api_lang.lower(), filename)
             new_url = storage.upload_file(
                 temp_image_path,
                 r2_path,
@@ -142,10 +143,9 @@ def upload_image(region: Region, date: datetime.date, bing_url: str) -> str:
             print(f'⚠️ R2 上传失败: {e}，使用本地路径')
 
     # ★★★ 返回本地路径（相对于仓库根目录） ★★★
-    # 注意：这里返回的是相对路径，后续在 JSON 中会使用
-    # 如果你想让图片通过 GitHub raw 访问，可以返回完整 URL
-    # 例如：https://raw.githubusercontent.com/chnbsdan/Bing-Wallpaper-Archive/master/api/images/CN/zh/2024-04-03.jpg
-    relative_path = posixpath('api', 'images', region.api_country.upper(), region.api_lang.lower(), filename)
+    # 修复：使用 posixpath.join() 而不是 posixpath()
+    relative_path = posixpath.join('api', 'images', region.api_country.upper(), region.api_lang.lower(), filename)
+    print(f'📁 返回相对路径: {relative_path}')
     return relative_path
 
 
