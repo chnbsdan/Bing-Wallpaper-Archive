@@ -323,7 +323,7 @@
         .grid::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 3px; transition: 0.3s; }
         .grid::-webkit-scrollbar-thumb:hover { background: #81d4fa; }
 
-        /* ===== ★★★ 卡片 - object-fit:cover 消除白边 ★★★ ===== */
+        /* ===== ★★★ 卡片 - 修复白边问题 ★★★ ===== */
         .card {
             position: relative;
             overflow: hidden;
@@ -341,7 +341,7 @@
         .card img {
             width: 100%;
             height: 100%;
-            object-fit: cover;  /* ★★★ 裁剪填充，消除白边 ★★★ */
+            object-fit: cover;  /* ★★★ 关键：裁剪填充，消除白边 ★★★ */
             display: block;
             position: relative;
             z-index: 2;
@@ -1054,11 +1054,17 @@
             toggleNav();
         });
 
+        // ★★★ 鼠标移出导航栏时，自动关闭（但不影响悬停） ★★★
         navbar.addEventListener('mouseleave', function() {
-            if (navOpen) return;
+            if (navOpen) {
+                // 如果是点击打开的，保持打开
+                return;
+            }
+            // 如果是悬停打开的，移出后关闭
             navbar.classList.remove('toggle-open');
         });
 
+        // ★★★ 点击页面其他区域关闭导航栏 ★★★
         document.addEventListener('click', function(e) {
             if (navOpen && !navbar.contains(e.target) && e.target !== navToggle) {
                 toggleNav(false);
@@ -1149,69 +1155,21 @@
         var regionLoadBtn = document.getElementById('regionLoadBtn');
 
         // ============================================================
-        // ★★★ 生成 Bing 图片 URL（支持分辨率后缀） ★★★
-        // ============================================================
-        function getBingImageUrl(bingUrl, resolution) {
-            if (!bingUrl) return '';
-            
-            var baseUrl = bingUrl;
-            var resolutions = ['_UHD', '_1920x1080', '_1080x1920', '_1366x768', '_768x1280'];
-            for (var i = 0; i < resolutions.length; i++) {
-                var suffix = resolutions[i] + '.jpg';
-                if (baseUrl.endsWith(suffix)) {
-                    baseUrl = baseUrl.replace(suffix, '');
-                    break;
-                }
-            }
-            if (baseUrl.indexOf('?') !== -1) {
-                baseUrl = baseUrl.split('?')[0];
-            }
-            
-            var resolutionMap = {
-                '4k': '_UHD.jpg',
-                'fhd': '_1920x1080.jpg',
-                'hd': '_1366x768.jpg',
-                'mobile': '_1080x1920.jpg',
-                'mobile_s': '_768x1280.jpg'
-            };
-            
-            var suffix = resolutionMap[resolution] || '_UHD.jpg';
-            return baseUrl + suffix;
-        }
-
-        // ============================================================
-        // ★★★ 根据屏幕方向获取预览图片 ★★★
-        // ============================================================
-        function getPreviewImageUrl(item) {
-            var bingUrl = item.bing_url || '';
-            if (!bingUrl) return item.jpg || '';
-            
-            var isPortrait = window.innerHeight > window.innerWidth;
-            var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            if (isMobile && isPortrait) {
-                return getBingImageUrl(bingUrl, 'mobile');
-            }
-            return getBingImageUrl(bingUrl, 'fhd');
-        }
-
-        // ============================================================
-        // 6.1 生成缩略图 URL (400x240)
+        // 6.1 ★★★ 生成缩略图 URL (400x240) ★★★
         // ============================================================
         function getThumbnailUrl(item) {
             var bingUrl = item.bing_url || '';
             var originalUrl = item.url || '';
             
+            // ★★★ 从 Bing URL 生成 400x240 缩略图 ★★★
             if (bingUrl && bingUrl.indexOf('th?id=') !== -1) {
                 var baseUrl = bingUrl.split('&')[0];
-                // 如果 URL 以 _UHD.jpg 结尾，替换为 _400x240.jpg
-                if (baseUrl.endsWith('_UHD')) {
-                    return baseUrl + '_400x240.jpg';
-                }
                 return baseUrl + '&w=400&h=240';
             }
             
+            // 如果是 npanuhin 的图片，添加缩略图参数
             if (originalUrl && originalUrl.indexOf('bing.npanuhin.me') !== -1) {
+                // npanuhin 的图片可能不支持参数，直接用原图
                 return originalUrl;
             }
             
@@ -1229,6 +1187,7 @@
             grid.innerHTML = '<div class="loading-indicator" style="flex:0 0 100%;padding:40px 0;"><i class="fas fa-spinner"></i> 加载 ' + region + ' 壁纸...</div>';
 
             try {
+                // ★★★ 使用 jsDelivr CDN 加速 ★★★
                 var url = 'https://cdn.jsdelivr.net/gh/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive@master/api/' + region + '.json';
                 console.log('📡 请求数据 (CDN):', url);
 
@@ -1242,10 +1201,9 @@
                     return;
                 }
 
-                // ★★★ 转换数据格式，保留 bing_url ★★★
+                // ★★★ 转换数据格式，生成缩略图 ★★★
                 allData = rawData.map(function(item) {
                     var originalUrl = item.url || '';
-                    var bingUrl = item.bing_url || '';
                     var thumbUrl = getThumbnailUrl(item);
 
                     return {
@@ -1257,11 +1215,11 @@
                         description: item.description || '',
                         jpg: originalUrl,
                         thumb: thumbUrl,
-                        bing_url: bingUrl,
+                        bing_url: item.bing_url || '',
                         urls: {
-                            uhd: bingUrl || originalUrl,
-                            fhd: bingUrl || originalUrl,
-                            hd: bingUrl || originalUrl,
+                            uhd: originalUrl,
+                            fhd: originalUrl,
+                            hd: originalUrl,
                             thumb: thumbUrl
                         }
                     };
@@ -1289,7 +1247,7 @@
         }
 
         // ============================================================
-        // 6.3 ★★★ 渲染页面 - 使用 400x240 缩略图 ★★★
+        // 6.3 ★★★ 渲染页面 - 使用 400x240 缩略图，object-fit:cover 消除白边 ★★★
         // ============================================================
         function renderPage(page) {
             var data = filteredData.length > 0 ? filteredData : allData;
@@ -1342,6 +1300,7 @@
                     placeholderBg.classList.add('hidden');
                 }
 
+                // ★★★ 缩略图加载失败，降级到原图 ★★★
                 img.addEventListener('error', function() {
                     var currentSrc = this.src;
                     if (currentSrc === thumbUrl && fullUrl && fullUrl !== thumbUrl) {
@@ -1528,7 +1487,7 @@
         regionSelect.addEventListener('change', switchRegion);
 
         // ============================================================
-        // 7. ★★★ 大图预览 - 优先使用 bing_url ★★★
+        // 7. 大图预览
         // ============================================================
         function openPreview(index) {
             if (!allData || allData.length === 0) return;
@@ -1540,8 +1499,7 @@
             showPreview(currentPreviewIndex);
             previewOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
-
-            var imgSrc = currentPreviewItem.bing_url || currentPreviewItem.jpg || '';
+            var imgSrc = currentPreviewItem.jpg || '';
             previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
 
             navToggle.classList.add('hidden');
@@ -1560,18 +1518,11 @@
             currentPreviewIndex = index;
             currentPreviewItem = allData[currentPreviewIndex];
 
-            // ★★★ 根据屏幕方向选择图片 ★★★
-            var imgSrc = getPreviewImageUrl(currentPreviewItem);
+            var imgSrc = currentPreviewItem.jpg || '';
 
             previewImg.src = imgSrc;
 
             previewImg.onerror = function() {
-                var fallbackSrc = currentPreviewItem.jpg || '';
-                if (this.src !== fallbackSrc && fallbackSrc) {
-                    console.log('🔄 Bing URL 加载失败，降级到本地图片:', currentPreviewItem.date);
-                    this.src = fallbackSrc;
-                    return;
-                }
                 this.alt = '图片加载失败';
                 console.warn('❌ 预览图片加载失败:', currentPreviewItem.date);
             };
@@ -1579,21 +1530,9 @@
             previewCopyright.textContent = currentPreviewItem.copyright || '';
             previewDate.textContent = currentPreviewItem.date || '';
             previewDesc.textContent = currentPreviewItem.title || '';
-
-            var bgSrc = imgSrc || currentPreviewItem.jpg || '';
-            previewOverlay.style.setProperty('--bg-url', 'url(' + bgSrc + ')');
+            previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
             resetZoom();
         }
-
-        // ★★★ 屏幕旋转时重新加载预览图片 ★★★
-        window.addEventListener('resize', function() {
-            if (previewOverlay.classList.contains('active') && currentPreviewItem) {
-                var newSrc = getPreviewImageUrl(currentPreviewItem);
-                if (newSrc !== previewImg.src) {
-                    previewImg.src = newSrc;
-                }
-            }
-        });
 
         function closePreview() {
             previewOverlay.classList.remove('active');
@@ -1690,19 +1629,17 @@
             var item = allData[index];
             if (!item) return;
 
-            var bingUrl = item.bing_url || '';
-            var localUrl = item.jpg || '';
-            var downloadUrl = bingUrl ? getBingImageUrl(bingUrl, resolution) : localUrl;
-
+            var url = item.jpg || '';
             var fileName = 'wallpaper_' + (item.date || '') + '_' + resolution + '.jpg';
 
             var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
             console.log('📥 开始下载: ' + fileName + (isMobile ? ' (移动端)' : ''));
 
+            // ★★★ 移动端使用 a 标签直接下载 ★★★
             if (isMobile) {
                 var link = document.createElement('a');
-                link.href = downloadUrl;
+                link.href = url;
                 link.download = fileName;
                 link.target = '_blank';
                 document.body.appendChild(link);
@@ -1712,8 +1649,9 @@
                 return;
             }
 
-            function tryDownload(url) {
-                fetch(url, { mode: 'cors' })
+            // ★★★ PC 端使用 fetch 下载 ★★★
+            function tryDownload(downloadUrl) {
+                fetch(downloadUrl, { mode: 'cors' })
                     .then(function(response) {
                         if (!response.ok) throw new Error('网络请求失败');
                         return response.blob();
@@ -1731,9 +1669,9 @@
                         console.log('✅ 下载成功: ' + fileName);
                     })
                     .catch(function(err) {
-                        console.warn('⚠️ 下载失败，尝试直接打开:', err.message);
+                        console.warn('⚠️ 下载失败，直接打开图片:', err.message);
                         var link = document.createElement('a');
-                        link.href = url;
+                        link.href = downloadUrl;
                         link.download = fileName;
                         link.target = '_blank';
                         document.body.appendChild(link);
@@ -1742,7 +1680,7 @@
                     });
             }
 
-            tryDownload(downloadUrl);
+            tryDownload(url);
         }
 
         // ============================================================
@@ -1888,8 +1826,7 @@
         console.log('📊 数据源: https://cdn.jsdelivr.net/gh/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive@master/api/');
         console.log('💡 鼠标悬停汉堡菜单 → 显示导航栏');
         console.log('💡 点击汉堡菜单 → 锁定导航栏');
-        console.log('💡 大图预览优先使用 Bing 官方图片');
-        console.log('💡 手机端自动适配竖屏分辨率');
+        console.log('💡 使用 FAS6 图标样式');
 
         window.openComment = openComment;
 
