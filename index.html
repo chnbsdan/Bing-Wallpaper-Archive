@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>必应壁纸 · 全球主要地区</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>" />
+    <title>必应壁纸 · 全球地区</title>
+    <!-- ★★★ 自定义 favicon ★★★ -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         /* ===== CSS 变量 ===== */
@@ -104,7 +106,7 @@
             box-shadow: 0 0 12px rgba(79,195,247,0.4); 
         }
 
-        /* ===== 导航栏 ===== */
+        /* ===== ★★★ 汉堡菜单 - 悬停显示 ★★★ ===== */
         .nav-toggle { 
             position: fixed; 
             top: 12px; 
@@ -122,9 +124,13 @@
             line-height: 1; 
             -webkit-tap-highlight-color: transparent; 
         }
-        .nav-toggle:hover { background: var(--accent-hover); border-color: rgba(79,195,247,0.2); }
+        .nav-toggle:hover { 
+            background: var(--accent-hover); 
+            border-color: rgba(79,195,247,0.3); 
+        }
         .nav-toggle.hidden { display: none !important; }
         
+        /* ★★★ 导航栏 - 悬停触发 ★★★ */
         .navbar { 
             position: fixed; 
             top: 12px; 
@@ -141,12 +147,29 @@
             min-width: 240px; 
             opacity: 0; 
             transform: translateY(-10px) scale(0.95); 
-            transition: opacity 0.25s ease, transform 0.25s ease; 
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease; 
             pointer-events: none; 
+            visibility: hidden;
             box-shadow: 0 8px 32px var(--shadow-color); 
             max-width: 92vw; 
         }
-        .navbar.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+        /* ★★★ 悬停或点击时显示 ★★★ */
+        .navbar.open, 
+        .nav-toggle:hover + .navbar,
+        .navbar:hover {
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+            pointer-events: auto;
+            visibility: visible;
+        }
+        /* ★★★ 点击汉堡菜单时切换 ★★★ */
+        .navbar.toggle-open {
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+            pointer-events: auto;
+            visibility: visible;
+        }
+
         .navbar-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .navbar .logo { color: var(--text-primary); font-size: 17px; font-weight: 300; display: flex; align-items: center; gap: 8px; }
         .navbar .logo span { color: var(--accent-color); font-weight: 600; }
@@ -300,7 +323,7 @@
         .grid::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 3px; transition: 0.3s; }
         .grid::-webkit-scrollbar-thumb:hover { background: #81d4fa; }
 
-        /* ===== 卡片 ===== */
+        /* ===== ★★★ 卡片 - 修复白边问题 ★★★ ===== */
         .card {
             position: relative;
             overflow: hidden;
@@ -318,7 +341,7 @@
         .card img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover;  /* ★★★ 关键：裁剪填充，消除白边 ★★★ */
             display: block;
             position: relative;
             z-index: 2;
@@ -730,9 +753,7 @@
 
         [data-theme="dark"] .comment-body { background: #ffffff !important; }
 
-        /* ============================================================
-           ★★★ Twikoo 暗色模式 - 强制白底黑字 ★★★
-           ============================================================ */
+        /* Twikoo 暗色模式 - 强制白底黑字 */
         [data-theme="dark"] .comment-modal { background: #ffffff !important; border-color: #e8e8e8 !important; }
         [data-theme="dark"] .comment-body { background: #ffffff !important; }
         [data-theme="dark"] .comment-header { border-bottom-color: #e8e8e8 !important; }
@@ -838,7 +859,7 @@
     <!-- ===== 进度条 ===== -->
     <div id="progress-bar"></div>
 
-    <!-- ===== 导航栏 ===== -->
+    <!-- ===== ★★★ 导航栏 - 悬停显示 ★★★ ===== -->
     <button class="nav-toggle" id="navToggle" aria-label="切换导航"><i class="fas fa-bars"></i></button>
     <div class="navbar" id="navbar">
         <div class="navbar-header">
@@ -970,6 +991,20 @@
         var BASE_PATH = getBasePath();
 
         // ============================================================
+        // ★★★ 自定义 favicon ★★★
+        // ============================================================
+        function setFavicon() {
+            var faviconUrl = '/favicon.ico';
+            var link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+            link.type = 'image/x-icon';
+            link.rel = 'shortcut icon';
+            link.href = faviconUrl;
+            document.head.appendChild(link);
+            console.log('✅ favicon 已设置:', faviconUrl);
+        }
+        setFavicon();
+
+        // ============================================================
         // 2. 主题切换
         // ============================================================
         var themeToggle = document.getElementById('themeToggle');
@@ -1002,7 +1037,7 @@
         }
 
         // ============================================================
-        // 4. 导航栏
+        // 4. ★★★ 导航栏 - 悬停 + 点击切换 ★★★
         // ============================================================
         var navToggle = document.getElementById('navToggle');
         var navbar = document.getElementById('navbar');
@@ -1010,7 +1045,7 @@
 
         function toggleNav(open) {
             navOpen = open !== undefined ? open : !navOpen;
-            navbar.classList.toggle('open', navOpen);
+            navbar.classList.toggle('toggle-open', navOpen);
             navToggle.innerHTML = navOpen ? '<i class="fas fa-xmark"></i>' : '<i class="fas fa-bars"></i>';
         }
 
@@ -1018,6 +1053,18 @@
             e.stopPropagation();
             toggleNav();
         });
+
+        // ★★★ 鼠标移出导航栏时，自动关闭（但不影响悬停） ★★★
+        navbar.addEventListener('mouseleave', function() {
+            if (navOpen) {
+                // 如果是点击打开的，保持打开
+                return;
+            }
+            // 如果是悬停打开的，移出后关闭
+            navbar.classList.remove('toggle-open');
+        });
+
+        // ★★★ 点击页面其他区域关闭导航栏 ★★★
         document.addEventListener('click', function(e) {
             if (navOpen && !navbar.contains(e.target) && e.target !== navToggle) {
                 toggleNav(false);
@@ -1034,7 +1081,7 @@
         function openComment() {
             commentOverlay.classList.add('active');
             document.body.style.overflow = 'hidden';
-            toggleNav(false);
+            if (navOpen) toggleNav(false);
             if (!document.getElementById('tcomment').hasChildNodes()) {
                 initTwikoo();
             }
@@ -1077,9 +1124,8 @@
         });
 
         // ============================================================
-        // 6. 数据加载 - ★★★ 核心功能 ★★★
+        // 6. 数据加载 - 核心功能
         // ============================================================
-        // ★★★ 修改为你的 GitHub 用户名 ★★★
         var GITHUB_USERNAME = 'chnbsdan';
         var currentRegion = 'CN/zh';
         var allData = [];
@@ -1109,206 +1155,192 @@
         var regionLoadBtn = document.getElementById('regionLoadBtn');
 
         // ============================================================
-        // 6.1 ★★★ 生成缩略图 URL ★★★
+        // 6.1 ★★★ 生成缩略图 URL (400x240) ★★★
         // ============================================================
-        function getThumbnailUrl(originalUrl) {
-            if (!originalUrl) return '';
-            // 如果已经是完整URL，尝试替换为缩略图参数
-            if (originalUrl.startsWith('http')) {
-                // 如果是 bing.npanuhin.me 的图片，直接使用原图作为缩略图（服务端有缓存）
-                if (originalUrl.indexOf('bing.npanuhin.me') !== -1) {
-                    return originalUrl;
-                }
-                // 如果是 GitHub raw 图片，尝试添加宽度参数（实际可能不支持）
+        function getThumbnailUrl(item) {
+            var bingUrl = item.bing_url || '';
+            var originalUrl = item.url || '';
+            
+            // ★★★ 从 Bing URL 生成 400x240 缩略图 ★★★
+            if (bingUrl && bingUrl.indexOf('th?id=') !== -1) {
+                var baseUrl = bingUrl.split('&')[0];
+                return baseUrl + '&w=400&h=240';
+            }
+            
+            // 如果是 npanuhin 的图片，添加缩略图参数
+            if (originalUrl && originalUrl.indexOf('bing.npanuhin.me') !== -1) {
+                // npanuhin 的图片可能不支持参数，直接用原图
                 return originalUrl;
             }
+            
             return originalUrl;
         }
 
-       // ============================================================
-// 6.2 加载数据 - ★★★ 生成 400x240 缩略图 ★★★
-// ============================================================
-async function loadData(region) {
-    if (!region) region = currentRegion;
-    currentRegion = region;
+        // ============================================================
+        // 6.2 加载数据
+        // ============================================================
+        async function loadData(region) {
+            if (!region) region = currentRegion;
+            currentRegion = region;
 
-    showProgress();
-    grid.innerHTML = '<div class="loading-indicator" style="flex:0 0 100%;padding:40px 0;"><i class="fas fa-spinner"></i> 加载 ' + region + ' 壁纸...</div>';
+            showProgress();
+            grid.innerHTML = '<div class="loading-indicator" style="flex:0 0 100%;padding:40px 0;"><i class="fas fa-spinner"></i> 加载 ' + region + ' 壁纸...</div>';
 
-    try {
-        // ★★★ 使用 CDN 加速 ★★★
-        var url = 'https://cdn.jsdelivr.net/gh/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive@master/api/' + region + '.json';
-        console.log('📡 请求数据 (CDN):', url);
+            try {
+                // ★★★ 使用 jsDelivr CDN 加速 ★★★
+                var url = 'https://cdn.jsdelivr.net/gh/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive@master/api/' + region + '.json';
+                console.log('📡 请求数据 (CDN):', url);
 
-        var res = await fetch(url);
-        if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请检查地区文件是否存在');
-        var rawData = await res.json();
+                var res = await fetch(url);
+                if (!res.ok) throw new Error('HTTP ' + res.status + ' - 请检查地区文件是否存在');
+                var rawData = await res.json();
 
-        if (!Array.isArray(rawData) || rawData.length === 0) {
-            showEmpty('该地区暂无壁纸数据');
-            hideProgress();
-            return;
-        }
-
-        // ★★★ 转换数据格式，生成缩略图 ★★★
-        allData = rawData.map(function(item) {
-            var originalUrl = item.url || '';
-            var bingUrl = item.bing_url || '';
-            
-            // ★★★ 生成 400x240 缩略图 ★★★
-            var thumbUrl = '';
-            if (bingUrl && bingUrl.indexOf('th?id=') !== -1) {
-                // 从 Bing URL 生成缩略图
-                var baseUrl = bingUrl.split('&')[0];
-                thumbUrl = baseUrl + '&w=400&h=240';
-            } else if (originalUrl && originalUrl.indexOf('bing.npanuhin.me') !== -1) {
-                // 如果是 npanuhin 的图片，尝试添加缩略图参数（可能不支持）
-                thumbUrl = originalUrl;
-            } else {
-                thumbUrl = originalUrl;
-            }
-
-            return {
-                date: item.date || '',
-                copyright: item.copyright || '',
-                title: item.title || item.caption || '',
-                caption: item.caption || '',
-                subtitle: item.subtitle || '',
-                description: item.description || '',
-                // ★★★ 原图 URL ★★★
-                jpg: originalUrl,
-                // ★★★ 缩略图 URL (400x240) ★★★
-                thumb: thumbUrl,
-                // ★★★ 备用缩略图：如果原始图不支持缩略图参数，用原图 ★★★
-                thumb_fallback: originalUrl,
-                urls: {
-                    uhd: originalUrl,
-                    fhd: originalUrl,
-                    hd: originalUrl,
-                    thumb: thumbUrl
+                if (!Array.isArray(rawData) || rawData.length === 0) {
+                    showEmpty('该地区暂无壁纸数据');
+                    hideProgress();
+                    return;
                 }
-            };
-        });
 
-        allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
+                // ★★★ 转换数据格式，生成缩略图 ★★★
+                allData = rawData.map(function(item) {
+                    var originalUrl = item.url || '';
+                    var thumbUrl = getThumbnailUrl(item);
 
-        filteredData = [];
-        totalNavCount.textContent = allData.length;
-        totalPages = Math.ceil(allData.length / PAGE_SIZE);
-        currentPage = 1;
-        hasMore = true;
-        grid.innerHTML = '';
-        renderPage(1);
-        hideProgress();
+                    return {
+                        date: item.date || '',
+                        copyright: item.copyright || '',
+                        title: item.title || item.caption || '',
+                        caption: item.caption || '',
+                        subtitle: item.subtitle || '',
+                        description: item.description || '',
+                        jpg: originalUrl,
+                        thumb: thumbUrl,
+                        bing_url: item.bing_url || '',
+                        urls: {
+                            uhd: originalUrl,
+                            fhd: originalUrl,
+                            hd: originalUrl,
+                            thumb: thumbUrl
+                        }
+                    };
+                });
 
-        var regionLabel = regionSelect.options[regionSelect.selectedIndex]?.text || region;
-        console.log('✅ 已加载 ' + regionLabel + ' (' + allData.length + ' 张)');
+                allData.sort(function(a, b) { return b.date.localeCompare(a.date); });
 
-    } catch (err) {
-        console.error('加载失败:', err);
-        showEmpty('加载失败: ' + err.message);
-        hideProgress();
-    }
-}
+                filteredData = [];
+                totalNavCount.textContent = allData.length;
+                totalPages = Math.ceil(allData.length / PAGE_SIZE);
+                currentPage = 1;
+                hasMore = true;
+                grid.innerHTML = '';
+                renderPage(1);
+                hideProgress();
 
-// ============================================================
-// 6.3 ★★★ 渲染页面 - 使用 400x240 缩略图 ★★★
-// ============================================================
-function renderPage(page) {
-    var data = filteredData.length > 0 ? filteredData : allData;
-    totalPages = Math.ceil(data.length / PAGE_SIZE);
-    if (page < 1) page = 1;
-    if (page > totalPages) {
-        hasMore = false;
-        showNoMore();
-        return;
-    }
-    currentPage = page;
-    var start = (page - 1) * PAGE_SIZE;
-    var end = Math.min(start + PAGE_SIZE, data.length);
-    var items = data.slice(start, end);
+                var regionLabel = regionSelect.options[regionSelect.selectedIndex]?.text || region;
+                console.log('✅ 已加载 ' + regionLabel + ' (' + allData.length + ' 张)');
 
-    if (items.length === 0) {
-        hasMore = false;
-        showNoMore();
-        return;
-    }
-
-    var loadingEl = document.querySelector('.loading-indicator');
-    if (loadingEl) loadingEl.remove();
-
-    items.forEach(function(item) {
-        var card = document.createElement('div');
-        card.className = 'card';
-
-        // ★★★ 使用缩略图 ★★★
-        var thumbUrl = item.thumb || item.jpg || '';
-        var fullUrl = item.jpg || '';
-        var fallbackUrl = item.thumb_fallback || fullUrl;
-
-        card.innerHTML =
-            '<div class="placeholder-bg" style="background-image: url(' + thumbUrl + ');"></div>' +
-            '<img src="' + thumbUrl + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
-            '<div class="info">' +
-            '<div class="date">' + item.date + '</div>' +
-            '<div class="title">' + (item.title || item.copyright || '无标题') + '</div>' +
-            '<div class="copyright">' + (item.copyright || '') + '</div>' +
-            '</div>';
-
-        var img = card.querySelector('img');
-        var placeholderBg = card.querySelector('.placeholder-bg');
-
-        img.addEventListener('load', function() {
-            img.classList.add('loaded');
-            placeholderBg.classList.add('hidden');
-        });
-        if (img.complete && img.naturalWidth > 0) {
-            img.classList.add('loaded');
-            placeholderBg.classList.add('hidden');
+            } catch (err) {
+                console.error('加载失败:', err);
+                showEmpty('加载失败: ' + err.message);
+                hideProgress();
+            }
         }
 
-        // ★★★ 缩略图加载失败，降级到原图 ★★★
-        img.addEventListener('error', function() {
-            var currentSrc = this.src;
-            if (currentSrc === thumbUrl && fallbackUrl && fallbackUrl !== thumbUrl) {
-                console.log('🔄 缩略图降级为原图:', item.date);
-                this.src = fallbackUrl;
+        // ============================================================
+        // 6.3 ★★★ 渲染页面 - 使用 400x240 缩略图，object-fit:cover 消除白边 ★★★
+        // ============================================================
+        function renderPage(page) {
+            var data = filteredData.length > 0 ? filteredData : allData;
+            totalPages = Math.ceil(data.length / PAGE_SIZE);
+            if (page < 1) page = 1;
+            if (page > totalPages) {
+                hasMore = false;
+                showNoMore();
                 return;
             }
-            // 如果原图也失败，显示占位
-            this.classList.add('loaded');
-            placeholderBg.classList.add('hidden');
-            console.warn('❌ 图片加载失败:', item.date);
-        });
+            currentPage = page;
+            var start = (page - 1) * PAGE_SIZE;
+            var end = Math.min(start + PAGE_SIZE, data.length);
+            var items = data.slice(start, end);
 
-        card.addEventListener('click', function() {
-            var targetIndex = -1;
-            for (var i = 0; i < allData.length; i++) {
-                if (allData[i].date === item.date) {
-                    targetIndex = i;
-                    break;
-                }
+            if (items.length === 0) {
+                hasMore = false;
+                showNoMore();
+                return;
             }
-            if (targetIndex === -1) return;
-            openPreview(targetIndex);
-        });
 
-        grid.appendChild(card);
-    });
+            var loadingEl = document.querySelector('.loading-indicator');
+            if (loadingEl) loadingEl.remove();
 
-    if (page < totalPages) {
-        var loadingDiv = document.createElement('div');
-        loadingDiv.className = 'loading-indicator';
-        loadingDiv.id = 'loadingIndicator';
-        loadingDiv.innerHTML = '<i class="fas fa-spinner"></i> 加载更多...';
-        grid.appendChild(loadingDiv);
-    } else {
-        hasMore = false;
-        showNoMore();
-    }
+            items.forEach(function(item) {
+                var card = document.createElement('div');
+                card.className = 'card';
 
-    isLoading = false;
-}
+                var thumbUrl = item.thumb || item.jpg || '';
+                var fullUrl = item.jpg || '';
+
+                card.innerHTML =
+                    '<div class="placeholder-bg" style="background-image: url(' + thumbUrl + ');"></div>' +
+                    '<img src="' + thumbUrl + '" alt="' + (item.copyright || item.date) + '" loading="lazy" />' +
+                    '<div class="info">' +
+                    '<div class="date">' + item.date + '</div>' +
+                    '<div class="title">' + (item.title || item.copyright || '无标题') + '</div>' +
+                    '<div class="copyright">' + (item.copyright || '') + '</div>' +
+                    '</div>';
+
+                var img = card.querySelector('img');
+                var placeholderBg = card.querySelector('.placeholder-bg');
+
+                img.addEventListener('load', function() {
+                    img.classList.add('loaded');
+                    placeholderBg.classList.add('hidden');
+                });
+                if (img.complete && img.naturalWidth > 0) {
+                    img.classList.add('loaded');
+                    placeholderBg.classList.add('hidden');
+                }
+
+                // ★★★ 缩略图加载失败，降级到原图 ★★★
+                img.addEventListener('error', function() {
+                    var currentSrc = this.src;
+                    if (currentSrc === thumbUrl && fullUrl && fullUrl !== thumbUrl) {
+                        console.log('🔄 缩略图降级为原图:', item.date);
+                        this.src = fullUrl;
+                        return;
+                    }
+                    this.classList.add('loaded');
+                    placeholderBg.classList.add('hidden');
+                    console.warn('❌ 图片加载失败:', item.date);
+                });
+
+                card.addEventListener('click', function() {
+                    var targetIndex = -1;
+                    for (var i = 0; i < allData.length; i++) {
+                        if (allData[i].date === item.date) {
+                            targetIndex = i;
+                            break;
+                        }
+                    }
+                    if (targetIndex === -1) return;
+                    openPreview(targetIndex);
+                });
+
+                grid.appendChild(card);
+            });
+
+            if (page < totalPages) {
+                var loadingDiv = document.createElement('div');
+                loadingDiv.className = 'loading-indicator';
+                loadingDiv.id = 'loadingIndicator';
+                loadingDiv.innerHTML = '<i class="fas fa-spinner"></i> 加载更多...';
+                grid.appendChild(loadingDiv);
+            } else {
+                hasMore = false;
+                showNoMore();
+            }
+
+            isLoading = false;
+        }
 
         // ============================================================
         // 6.4 加载更多
@@ -1438,11 +1470,11 @@ function renderPage(page) {
             isLoading = false;
             totalPages = Math.ceil(allData.length / PAGE_SIZE);
             renderPage(1);
-            toggleNav(false);
+            if (navOpen) toggleNav(false);
         });
 
         // ============================================================
-        // 6.9 ★★★ 地区切换 ★★★
+        // 6.9 地区切换
         // ============================================================
         function switchRegion() {
             var region = regionSelect.value;
@@ -1476,33 +1508,6 @@ function renderPage(page) {
             previewImg.onclick = function(e) {
                 e.stopPropagation();
                 toggleToolbar();
-            };
-
-            var startX = 0;
-            var startY = 0;
-
-            previewImg.ontouchstart = function(e) {
-                var touch = e.touches[0];
-                startX = touch.clientX;
-                startY = touch.clientY;
-            };
-
-            previewImg.ontouchend = function(e) {
-                if (startX === 0) return;
-                var touch = e.changedTouches[0];
-                var deltaX = touch.clientX - startX;
-                var deltaY = touch.clientY - startY;
-
-                if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
-                    if (deltaX > 0) {
-                        showPreview(currentPreviewIndex - 1);
-                    } else {
-                        showPreview(currentPreviewIndex + 1);
-                    }
-                    showToolbar();
-                }
-                startX = 0;
-                startY = 0;
             };
         }
 
@@ -1607,8 +1612,10 @@ function renderPage(page) {
         closePreviewBtn.addEventListener('click', closePreview);
 
         // ============================================================
-        // 7.1 下载
+        // 7.1 ★★★ 下载功能 - 支持 PC 和移动端 ★★★
         // ============================================================
+        var downloadMenu = document.getElementById('downloadMenu');
+
         downloadMenu.querySelectorAll('a').forEach(function(item) {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1625,8 +1632,24 @@ function renderPage(page) {
             var url = item.jpg || '';
             var fileName = 'wallpaper_' + (item.date || '') + '_' + resolution + '.jpg';
 
-            console.log('📥 开始下载: ' + fileName);
+            var isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
+            console.log('📥 开始下载: ' + fileName + (isMobile ? ' (移动端)' : ''));
+
+            // ★★★ 移动端使用 a 标签直接下载 ★★★
+            if (isMobile) {
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                console.log('✅ 移动端下载已触发');
+                return;
+            }
+
+            // ★★★ PC 端使用 fetch 下载 ★★★
             function tryDownload(downloadUrl) {
                 fetch(downloadUrl, { mode: 'cors' })
                     .then(function(response) {
@@ -1659,6 +1682,74 @@ function renderPage(page) {
 
             tryDownload(url);
         }
+
+        // ============================================================
+        // 7.2 ★★★ 移动端触摸滑动切换 ★★★
+        // ============================================================
+        var touchStartX = 0;
+        var touchStartY = 0;
+        var touchStartTime = 0;
+        var isSwiping = false;
+
+        previewImg.addEventListener('touchstart', function(e) {
+            var touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            touchStartTime = Date.now();
+            isSwiping = true;
+        }, { passive: true });
+
+        previewImg.addEventListener('touchmove', function(e) {
+            if (!isSwiping) return;
+            var touch = e.touches[0];
+            var deltaX = touch.clientX - touchStartX;
+            var deltaY = touch.clientY - touchStartY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        previewImg.addEventListener('touchend', function(e) {
+            if (!isSwiping) return;
+            isSwiping = false;
+
+            var touch = e.changedTouches[0];
+            var deltaX = touch.clientX - touchStartX;
+            var deltaY = touch.clientY - touchStartY;
+            var deltaTime = Date.now() - touchStartTime;
+
+            if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2 && deltaTime < 500) {
+                if (deltaX > 0) {
+                    showPreview(currentPreviewIndex - 1);
+                } else {
+                    showPreview(currentPreviewIndex + 1);
+                }
+                showToolbar();
+            }
+            touchStartX = 0;
+            touchStartY = 0;
+        }, { passive: true });
+
+        // ============================================================
+        // 7.3 ★★★ 双击缩放 ★★★
+        // ============================================================
+        var lastTapTime = 0;
+        previewImg.addEventListener('click', function(e) {
+            var now = Date.now();
+            if (now - lastTapTime < 300) {
+                if (scale > 1.5) {
+                    resetZoom();
+                } else {
+                    scale = 2;
+                    updateTransform();
+                }
+                lastTapTime = 0;
+                e.preventDefault();
+            } else {
+                lastTapTime = now;
+            }
+        });
 
         // ============================================================
         // 8. 缩放
@@ -1730,11 +1821,11 @@ function renderPage(page) {
         // ============================================================
         // 9. ★★★ 启动 ★★★
         // ============================================================
-        // ★★★ 默认加载中国地区 ★★★
         loadData('CN/zh');
         console.log('✅ 必应壁纸 · 全球地区版已启动');
-        console.log('📊 数据源: https://raw.githubusercontent.com/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive/main/api/');
-        console.log('💡 点击左上角菜单切换地区');
+        console.log('📊 数据源: https://cdn.jsdelivr.net/gh/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive@master/api/');
+        console.log('💡 鼠标悬停汉堡菜单 → 显示导航栏');
+        console.log('💡 点击汉堡菜单 → 锁定导航栏');
         console.log('💡 使用 FAS6 图标样式');
 
         window.openComment = openComment;
