@@ -1,6 +1,7 @@
 import dataclasses
 import datetime
 import os
+import shutil
 from shutil import rmtree
 from typing import Any, Iterable
 
@@ -8,11 +9,20 @@ from anticorrupt import fetch_valid_image
 from ApiPostprocessor import postprocessor
 from Region import REGIONS, Region
 from bing_utils import extract_base_url, get_uhd_url
-from cloudflare import CloudflareR2
 from structures import ApiEntry, DATE_FORMAT
 from system_utils import mkpath, posixpath, warn, fetch_json
 
-storage = CloudflareR2()
+# ★★★ 修改：尝试导入 R2，失败则禁用 ★★★
+try:
+    from cloudflare import CloudflareR2
+    storage = CloudflareR2()
+    print('✅ Cloudflare R2 initialized')
+except ImportError:
+    print('⚠️ CloudflareR2 module not found, storage disabled')
+    storage = None
+except Exception as e:
+    print(f'⚠️ Cloudflare R2 initialization failed: {e}')
+    storage = None
 
 
 def parse_date(date_string: str) -> datetime.date | None:
@@ -39,8 +49,6 @@ def parse_date(date_string: str) -> datetime.date | None:
         return None
 
     if has_time and parsed.hour >= 15:
-        # TODO: explain in docs
-        # TODO: Check if this is correct with '%Y%m%d'
         parsed = parsed + datetime.timedelta(days=1)
 
     return parsed.date()
@@ -89,11 +97,10 @@ def add_entry(api_by_date: dict[datetime.date, ApiEntry], new_entry: ApiEntry) -
                 if old_value.startswith(new_value):
                     continue
 
-            case 'title' | 'caption':  # TODO
+            case 'title' | 'caption':
                 new_value = new_value.replace('’', "'")
 
         if old_value != new_value:
-            # TODO: No alert if new_value.startswith(old_value)
             warn(f'Rewriting key `{key}` for {date}:\n{old_value}\nvs\n{new_value}')
             updates[key] = new_value
 
@@ -103,6 +110,7 @@ def add_entry(api_by_date: dict[datetime.date, ApiEntry], new_entry: ApiEntry) -
     return bool(updates)
 
 
+# ★★★ 修改：上传图片函数 - 支持本地存储和 R2 ★★★
 def upload_image(region: Region, date: datetime.date, bing_url: str) -> str:
     filename = date.strftime(DATE_FORMAT) + '.jpg'
     temp_image_path = mkpath('_temp', filename)
@@ -111,18 +119,38 @@ def upload_image(region: Region, date: datetime.date, bing_url: str) -> str:
     with open(temp_image_path, 'wb') as file:
         file.write(content)
 
-    new_url = storage.upload_file(
-        temp_image_path,
-        posixpath(mkpath(region.api_country.upper(), region.api_lang.lower(), filename)),
-        skip_exists=False
-    )
-    return new_url
+    # ★★★ 本地存储路径 ★★★
+    local_path = mkpath('api', 'images', region.api_country.upper(), region.api_lang.lower(), filename)
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+    # 复制图片到本地
+    shutil.copy2(temp_image_path, local_path)
+    print(f'✅ 图片已保存到本地: {local_path}')
+
+    # ★★★ 如果 R2 可用，也上传到 R2 ★★★
+    if storage is not None:
+        try:
+            r2_path = posixpath(mkpath(region.api_country.upper(), region.api_lang.lower(), filename))
+            new_url = storage.upload_file(
+                temp_image_path,
+                r2_path,
+                skip_exists=False
+            )
+            print(f'✅ 图片已上传到 R2: {new_url}')
+            return new_url
+        except Exception as e:
+            print(f'⚠️ R2 上传失败: {e}，使用本地路径')
+
+    # ★★★ 返回本地路径（相对于仓库根目录） ★★★
+    # 注意：这里返回的是相对路径，后续在 JSON 中会使用
+    # 如果你想让图片通过 GitHub raw 访问，可以返回完整 URL
+    # 例如：https://raw.githubusercontent.com/chnbsdan/Bing-Wallpaper-Archive/master/api/images/CN/zh/2024-04-03.jpg
+    relative_path = posixpath('api', 'images', region.api_country.upper(), region.api_lang.lower(), filename)
+    return relative_path
 
 
 def update_from_hp_image_archive(region: Region, bing_url_mapping: dict[str, str]) -> Iterable[ApiEntry]:
-    # https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=100&mkt=en-US&setlang=en&cc=US
     print('Getting caption, image and image url from bing.com/HPImageArchive.aspx...')
-    # TODO: extract title and copyright
 
     data = fetch_json(
         'https://www.bing.com/HPImageArchive.aspx',
@@ -150,7 +178,6 @@ def update_from_hp_image_archive(region: Region, bing_url_mapping: dict[str, str
 
 
 def update_from_hp_api_model(region: Region, bing_url_mapping: dict[str, str]) -> Iterable[ApiEntry]:
-    # https://www.bing.com/hp/api/model?mkt=en-US&setlang=en&cc=US
     print('Getting title, caption, copyright, description and image url from bing.com/hp/api/model...')
 
     data = fetch_json(
@@ -188,7 +215,6 @@ def update_from_hp_api_model(region: Region, bing_url_mapping: dict[str, str]) -
 
 
 def update_from_hp_image_gallery(region: Region, bing_url_mapping: dict[str, str]) -> Iterable[ApiEntry]:
-    # https://www.bing.com/hp/api/v1/imagegallery?format=json&mkt=en-US&setlang=en&cc=US
     print('Getting title, subtitle, copyright, description and image url from bing.com/hp/api/v1/imagegallery...')
     data = fetch_json(
         'https://www.bing.com/hp/api/v1/imagegallery',
@@ -235,7 +261,6 @@ def update(region: Region):
     os.makedirs('_temp', exist_ok=True)
 
     api_by_date = {item.date: item for item in region.read_api()}
-    # bing_url_mapping = {item.bing_url: item.url for item in api_by_date.values() if item.bing_url and item.url}
     bing_url_mapping = {}  # Force uploading (rewriting) all available images
 
     for update_func in (
