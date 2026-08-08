@@ -1136,7 +1136,7 @@
             grid.innerHTML = '<div class="loading-indicator" style="flex:0 0 100%;padding:40px 0;"><i class="fas fa-spinner"></i> 加载 ' + region + ' 壁纸...</div>';
 
             try {
-                var url = 'https://raw.githubusercontent.com/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive/main/api/' + region + '.json';
+                var url = 'https://raw.githubusercontent.com/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive/master/api/' + region + '.json';
                 console.log('📡 请求数据:', url);
 
                 var res = await fetch(url);
