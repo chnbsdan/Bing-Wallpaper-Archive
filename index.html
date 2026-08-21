@@ -1254,7 +1254,7 @@
 
             // ---- ★★★ 核心：生成图片 URL ★★★ ----
             function getImageUrl(item, resolution) {
-                var url = item.url || '';
+                var url = item.bing_url || item.url || '';
                 if (!url) return '';
 
                 // 如果是必应官方链接，替换分辨率
@@ -1675,7 +1675,7 @@
 
             // ---- 下载 ----
             function getDownloadFileName(item, resolution) {
-                var url = item.url || '';
+                var url = item.bing_url || item.url || '';
                 if (url) {
                     var parts = url.split('/');
                     var filename = parts[parts.length - 1];
