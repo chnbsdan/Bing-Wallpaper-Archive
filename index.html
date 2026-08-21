@@ -1259,7 +1259,8 @@
 
                 // 如果是必应官方链接，替换分辨率
                 if (url.includes('th?id=')) {
-                    var baseUrl = url.replace(/_\d+x\d+\.jpg$/, '').replace(/_UHD\.jpg$/, '');
+                    // 提取基础 URL：去掉所有分辨率后缀
+                    var baseUrl = url.replace(/_(UHD|1920x1080|1080x1920|1366x768|768x1280|400x240)\.jpg$/, '');
                     var resMap = {
                         '4k': '_UHD.jpg',
                         'fhd': '_1920x1080.jpg',
