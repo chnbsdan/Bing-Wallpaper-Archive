@@ -7,7 +7,7 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
-        /* ===== 使用单地区版的 CSS 变量 ===== */
+        /* ===== CSS 变量 ===== */
         :root {
             --bg-primary: #0d0d1a;
             --bg-secondary: #1a1a2e;
@@ -125,7 +125,7 @@
         }
         #progress-bar { position: fixed; top: 0; left: 0; height: 2.5px; background: var(--progress-bar); width: 0%; z-index: 9999; transition: width 0.3s ease; box-shadow: 0 0 12px rgba(79,195,247,0.4); }
 
-        /* ===== 导航栏 - 悬停显示（单地区版风格） ===== */
+        /* ===== 导航栏 - 悬停显示 ===== */
         .navbar-modern {
             position: fixed;
             top: 16px;
@@ -365,7 +365,7 @@
         .nav-mobile-link:hover { background: var(--nav-link-hover); color: var(--text-primary); }
         .nav-mobile-link i { width: 20px; text-align: center; font-size: 16px; }
 
-        /* ★★★ 地区选择器（单地区版风格） ★★★ */
+        /* ★★★ 地区选择器 ★★★ */
         .region-select {
             background: var(--nav-search-bg);
             border: 1px solid var(--nav-search-border);
@@ -543,7 +543,7 @@
         }
         .empty .icon { font-size: 40px; margin-bottom: 10px; }
 
-        /* ===== 大图预览（单地区版风格） ===== */
+        /* ===== 大图预览 ===== */
         .preview-overlay {
             display: none;
             position: fixed;
@@ -601,7 +601,6 @@
             opacity: 1;
             transition: none;
         }
-        .preview-image.loading { opacity: 1; }
 
         .arrow {
             position: fixed;
@@ -675,7 +674,6 @@
             box-shadow: 0 6px 28px rgba(220,60,60,0.35);
         }
         .toolbar .btn:active { transform: scale(0.96); }
-        .toolbar .btn i { color: #fff; }
 
         .dropdown {
             position: relative;
@@ -893,7 +891,7 @@
         [data-theme="dark"] .comment-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15) !important; }
         [data-theme="dark"] .comment-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.04) !important; }
 
-        /* ===== Twikoo 深色模式 ===== */
+        /* Twikoo 深色模式 */
         [data-theme="dark"] .tk-comment,
         [data-theme="dark"] .tk-comment * { color: #e0e0e0 !important; }
         [data-theme="dark"] .tk-comment .tk-content { color: #d0d0d0 !important; }
@@ -1284,6 +1282,7 @@
                         return;
                     }
 
+                    // ★★★ 数据映射：直接使用 url 字段（必应官方链接） ★★★
                     allData = rawData.map(function(item) {
                         var originalUrl = item.url || '';
                         var thumbUrl = getThumbnailUrl(item);
@@ -1295,7 +1294,7 @@
                             caption: item.caption || '',
                             subtitle: item.subtitle || '',
                             description: item.description || '',
-                            jpg: originalUrl,
+                            jpg: originalUrl,  // ★★★ 大图直接用必应链接 ★★★
                             thumb: thumbUrl,
                             bing_url: item.bing_url || '',
                             urls: {
@@ -1538,19 +1537,37 @@
                 };
             }
 
+            // ★★★ 修复：showPreview 直接使用必应链接 ★★★
             function showPreview(index) {
                 if (allData.length === 0) return;
                 if (index < 0) index = allData.length - 1;
                 if (index >= allData.length) index = 0;
                 currentPreviewIndex = index;
                 currentPreviewItem = allData[currentPreviewIndex];
-                var isMobile = window.innerWidth < 768;
+
+                // ★★★ 直接使用数据中的 url 字段（必应官方链接） ★★★
                 var imgSrc = currentPreviewItem.jpg || '';
+
+                // 如果 jpg 无效，尝试从 urls 获取
+                if (!imgSrc || imgSrc === '' || imgSrc === 'undefined') {
+                    imgSrc = currentPreviewItem.urls?.fhd || currentPreviewItem.urls?.uhd || '';
+                }
+
+                // 如果还是空，尝试用 thumb（降级）
+                if (!imgSrc || imgSrc === '' || imgSrc === 'undefined') {
+                    imgSrc = currentPreviewItem.thumb || '';
+                }
 
                 previewImg.src = imgSrc;
                 previewImg.onerror = function() {
+                    console.warn('❌ 预览图片加载失败，尝试降级:', currentPreviewItem.date);
+                    if (this.src !== currentPreviewItem.thumb && currentPreviewItem.thumb) {
+                        this.src = currentPreviewItem.thumb;
+                        return;
+                    }
                     this.alt = '图片加载失败';
                 };
+
                 previewCopyright.textContent = currentPreviewItem.copyright || '';
                 previewDate.textContent = currentPreviewItem.date || '';
                 previewDesc.textContent = currentPreviewItem.title || '';
