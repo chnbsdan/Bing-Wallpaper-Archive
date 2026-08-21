@@ -1252,14 +1252,26 @@
             if (commentOverlay) commentOverlay.addEventListener('click', function(e) { if (e.target === commentOverlay) closeComment(); });
             document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && commentOverlay.classList.contains('active')) closeComment(); });
 
-            // ---- 生成缩略图 URL ----
-            function getThumbnailUrl(item) {
-                var bingUrl = item.bing_url || '';
-                var originalUrl = item.url || '';
-                if (bingUrl && bingUrl.indexOf('th?id=') !== -1) {
-                    return bingUrl.split('&')[0] + '&w=400&h=240';
+            // ---- ★★★ 核心：生成图片 URL ★★★ ----
+            function getImageUrl(item, resolution) {
+                var url = item.url || '';
+                if (!url) return '';
+
+                // 如果是必应官方链接，替换分辨率
+                if (url.includes('th?id=')) {
+                    var baseUrl = url.replace(/_\d+x\d+\.jpg$/, '').replace(/_UHD\.jpg$/, '');
+                    var resMap = {
+                        '4k': '_UHD.jpg',
+                        'fhd': '_1920x1080.jpg',
+                        'hd': '_1366x768.jpg',
+                        'mobile': '_1080x1920.jpg',
+                        'mobile_s': '_768x1280.jpg',
+                        'thumb': '_400x240.jpg'
+                    };
+                    var suffix = resMap[resolution] || '_1920x1080.jpg';
+                    return baseUrl + suffix;
                 }
-                return originalUrl;
+                return url;
             }
 
             // ---- 加载数据（多地区） ----
@@ -1282,10 +1294,10 @@
                         return;
                     }
 
-                    // ★★★ 数据映射：直接使用 url 字段（必应官方链接） ★★★
+                    // ★★★ 数据映射 ★★★
                     allData = rawData.map(function(item) {
                         var originalUrl = item.url || '';
-                        var thumbUrl = getThumbnailUrl(item);
+                        var thumbUrl = getImageUrl(item, 'thumb');
 
                         return {
                             date: item.date || '',
@@ -1294,14 +1306,17 @@
                             caption: item.caption || '',
                             subtitle: item.subtitle || '',
                             description: item.description || '',
-                            jpg: originalUrl,  // ★★★ 大图直接用必应链接 ★★★
+                            url: originalUrl,
+                            jpg: originalUrl,
                             thumb: thumbUrl,
                             bing_url: item.bing_url || '',
                             urls: {
-                                uhd: originalUrl,
-                                fhd: originalUrl,
-                                hd: originalUrl,
-                                thumb: thumbUrl
+                                uhd: getImageUrl(item, '4k'),
+                                fhd: getImageUrl(item, 'fhd'),
+                                hd: getImageUrl(item, 'hd'),
+                                mobile: getImageUrl(item, 'mobile'),
+                                mobile_s: getImageUrl(item, 'mobile_s'),
+                                thumb: getImageUrl(item, 'thumb')
                             }
                         };
                     });
@@ -1346,8 +1361,8 @@
                 items.forEach(function(item) {
                     var card = document.createElement('div');
                     card.className = 'card';
-                    var thumbSrc = item.thumb || item.jpg || '';
-                    var fullUrl = item.jpg || '';
+                    var thumbSrc = item.urls.thumb || item.thumb || '';
+                    var fullUrl = item.url || '';
                     card.innerHTML =
                         '<div class="placeholder-bg" style="background-image: url(' + thumbSrc + ');"></div>' +
                         '<img src="' + thumbSrc + '" alt="' + (item.copyright || item.date) + '" loading="lazy" crossorigin="anonymous" />' +
@@ -1509,7 +1524,7 @@
                 showPreview(currentPreviewIndex);
                 previewOverlay.classList.add('active');
                 document.body.style.overflow = 'hidden';
-                var imgSrc = currentPreviewItem.jpg || '';
+                var imgSrc = currentPreviewItem.urls.fhd || currentPreviewItem.url || '';
                 previewOverlay.style.setProperty('--bg-url', 'url(' + imgSrc + ')');
                 applyToolbarVisibility(true);
                 previewImg.onclick = function(e) {
@@ -1537,7 +1552,7 @@
                 };
             }
 
-            // ★★★ 修复：showPreview 直接使用必应链接 ★★★
+            // ★★★ 预览：使用 getImageUrl 生成对应分辨率 ★★★
             function showPreview(index) {
                 if (allData.length === 0) return;
                 if (index < 0) index = allData.length - 1;
@@ -1545,24 +1560,16 @@
                 currentPreviewIndex = index;
                 currentPreviewItem = allData[currentPreviewIndex];
 
-                // ★★★ 直接使用数据中的 url 字段（必应官方链接） ★★★
-                var imgSrc = currentPreviewItem.jpg || '';
-
-                // 如果 jpg 无效，尝试从 urls 获取
-                if (!imgSrc || imgSrc === '' || imgSrc === 'undefined') {
-                    imgSrc = currentPreviewItem.urls?.fhd || currentPreviewItem.urls?.uhd || '';
-                }
-
-                // 如果还是空，尝试用 thumb（降级）
-                if (!imgSrc || imgSrc === '' || imgSrc === 'undefined') {
-                    imgSrc = currentPreviewItem.thumb || '';
-                }
+                var isMobile = window.innerWidth < 768;
+                var resolution = isMobile ? 'mobile' : 'fhd';
+                var imgSrc = getImageUrl(currentPreviewItem, resolution);
 
                 previewImg.src = imgSrc;
                 previewImg.onerror = function() {
                     console.warn('❌ 预览图片加载失败，尝试降级:', currentPreviewItem.date);
-                    if (this.src !== currentPreviewItem.thumb && currentPreviewItem.thumb) {
-                        this.src = currentPreviewItem.thumb;
+                    // 降级到原图
+                    if (this.src !== currentPreviewItem.url && currentPreviewItem.url) {
+                        this.src = currentPreviewItem.url;
                         return;
                     }
                     this.alt = '图片加载失败';
@@ -1667,7 +1674,7 @@
 
             // ---- 下载 ----
             function getDownloadFileName(item, resolution) {
-                var url = item.jpg || '';
+                var url = item.url || '';
                 if (url) {
                     var parts = url.split('/');
                     var filename = parts[parts.length - 1];
@@ -1743,7 +1750,7 @@
                 if (!item) return;
                 var fileName = getDownloadFileName(item, resolution);
                 var isMobileRes = (resolution === 'mobile' || resolution === 'mobile_s');
-                var url = item.jpg || '';
+                var url = getImageUrl(item, resolution);
                 if (!url) { console.warn('⚠️ 无效的下载地址'); return; }
 
                 function tryDownload(downloadUrl) {
@@ -1786,7 +1793,7 @@
 
             // ---- 启动 ----
             loadData('CN/zh');
-            console.log('✅ 必应壁纸 · 全球地区版已启动 (单地区版风格)');
+            console.log('✅ 必应壁纸 · 全球地区版已启动');
             console.log('📊 数据源: https://cdn.jsdelivr.net/gh/' + GITHUB_USERNAME + '/Bing-Wallpaper-Archive@master/api/');
             window.openComment = openComment;
 
