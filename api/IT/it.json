@@ -8702,11 +8702,21 @@
 	{
 		"title": "Passo del Giulio, Svizzera",
 		"caption": "Paesaggi garantiti",
-		"subtitle": null,
+		"subtitle": "Passo del Giulio, Svizzera",
 		"copyright": "© Westend61/Getty Images",
-		"description": "Il Passo del Giulio, in Svizzera, è una di quelle strade di montagna che diventano esse stesse una destinazione. A oltre 2.200 metri di quota, collega le valli alpine lungo un percorso frequentato da quasi duemila anni: prima di guardrail e asfalto, romani, mercanti e messaggeri lo attraversavano a piedi. Vicino alla cima, gli archeologi hanno rinvenuto monete antiche e due colonne di steatite di epoca romana, indizi di un luogo di sosta o santuario lungo la salita.",
+		"description": "Il Passo del Giulio, in Svizzera, è una di quelle strade di montagna che diventano esse stesse una destinazione. A oltre 2.200 metri di quota, collega le valli alpine lungo un percorso frequentato da quasi duemila anni: prima di guardrail e asfalto, romani, mercanti e messaggeri lo attraversavano a piedi. Vicino alla cima, gli archeologi hanno rinvenuto monete antiche e due colonne di steatite di epoca romana, indizi di un luogo di sosta o santuario lungo la salita.\nLa strada attuale fu costruita tra il 1820 e il 1828; tra il 1935 e il 1940 divenne il primo passo alpino svizzero asfaltato. Oggi circa 3.000 veicoli lo percorrono ogni giorno, ma in inverno le catene da neve restano indispensabili. Gli amanti dei passi alpini lo trovano vicino di casa: sulle Alpi italiane, il Passo dello Stelvio o il Passo del Bernina offrono paesaggi comparabili, con curve che si aprono ogni volta su un panorama nuovo. Ogni tornante ha la sua ricompensa.",
 		"date": "2026-08-21",
 		"bing_url": "https://bing.com/th?id=OHR.JulierPass_IT-IT0417165500_UHD.jpg",
 		"url": "api/images/IT/it/2026-08-21.jpg"
+	},
+	{
+		"title": "Torre Sant'Andrea, Salento, Puglia, Italia",
+		"caption": "Il suono della Taranta",
+		"subtitle": null,
+		"copyright": "© Balate.Dorin/Shutterstock",
+		"description": "Le acque turchesi di Torre Sant'Andrea, nel Salento pugliese, con i loro faraglioni di roccia bianca levigata dal mare, sono una delle coste più spettacolari d'Italia. Ed è proprio in questo lembo di Puglia che stasera si accende la 29ª edizione de La Notte della Taranta, il più grande festival di musica popolare d'Europa: nato a Melpignano nel 1998, ogni anno attraversa venti borghi del Salento prima del Concertone finale.",
+		"date": "2026-08-22",
+		"bing_url": "https://bing.com/th?id=OHR.NotteTaranta_IT-IT0811899295_UHD.jpg",
+		"url": "api/images/IT/it/2026-08-22.jpg"
 	}
 ]

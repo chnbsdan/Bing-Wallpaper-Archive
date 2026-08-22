@@ -8712,11 +8712,21 @@
 	{
 		"title": "Serpentinenstraße am Julierpass, Schweiz",
 		"caption": "Auf in die Berge!",
-		"subtitle": null,
+		"subtitle": "Serpentinenstraße am Julierpass, Schweiz",
 		"copyright": "© Westend61/Getty Images",
-		"description": "Der Julierpass zählt zu den eindrucksvollsten Alpenübergängen der Schweiz. Die Passhöhe liegt auf 2284 Metern und verbindet seit fast 2000 Jahren verschiedene Täler miteinander. Bereits zur Römerzeit führte hier ein wichtiger Weg durch die Berge. Archäologische Funde nahe dem höchsten Punkt des Passes deuten darauf hin, dass Reisende diesen Ort nicht nur als Übergang, sondern auch als Rastplatz nutzten. Münzen und zwei römische Specksteinsäulen erinnern noch heute an diese lange Geschichte.",
+		"description": "Der Julierpass zählt zu den eindrucksvollsten Alpenübergängen der Schweiz. Die Passhöhe liegt auf 2284 Metern und verbindet seit fast 2000 Jahren verschiedene Täler miteinander. Bereits zur Römerzeit führte hier ein wichtiger Weg durch die Berge. Archäologische Funde nahe dem höchsten Punkt des Passes deuten darauf hin, dass Reisende diesen Ort nicht nur als Übergang, sondern auch als Rastplatz nutzten. Münzen und zwei römische Specksteinsäulen erinnern noch heute an diese lange Geschichte.\nDie heutige Passstraße entstand zwischen 1820 und 1828 und wurde von 1935 bis 1940 als erste Schweizer Alpenstraße vollständig asphaltiert. Jeden Tag nutzen rund 3000 Fahrzeuge die Strecke. Besonders bekannt ist sie für ihre zahlreichen Kurven, die immer neue Ausblicke auf die umliegende Berglandschaft eröffnen. Im Winter können bei schwierigen Bedingungen sogar Schneeketten erforderlich sein. So wird die Fahrt über den Julierpass selbst zum Erlebnis und macht deutlich, dass manchmal schon der Weg das eigentliche Ziel sein kann.",
 		"date": "2026-08-21",
 		"bing_url": "https://bing.com/th?id=OHR.JulierPass_DE-DE4547078745_UHD.jpg",
 		"url": "api/images/DE/de/2026-08-21.jpg"
+	},
+	{
+		"title": "Hauhechel-Bläuling, Devon, England",
+		"caption": "Himmelblaue Flügel",
+		"subtitle": null,
+		"copyright": "© Ross Hoddinott/Nature Picture Library",
+		"description": "Der Hauhechel-Bläuling gehört zu den bekanntesten Tagfaltern Europas. In Devon im Südwesten Englands ist er regelmäßig auf blütenreichen Wiesen, an Küstenhängen und entlang ruhiger Landwege zu beobachten. Besonders an sonnigen Tagen flattert er zwischen Wildblumen umher und zeigt dabei seine leuchtend blaue Flügelfärbung. Die Art bevorzugt offene Lebensräume mit einem reichen Angebot an Nektarpflanzen und trägt zur Vielfalt dieser Landschaften bei. Wegen seiner auffälligen Erscheinung ist der kleine Falter bei Naturfreunden und Fotografen gleichermaßen beliebt.",
+		"date": "2026-08-22",
+		"bing_url": "https://bing.com/th?id=OHR.CommonBlue_DE-DE9673283581_UHD.jpg",
+		"url": "api/images/DE/de/2026-08-22.jpg"
 	}
 ]

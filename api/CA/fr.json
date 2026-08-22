@@ -8722,11 +8722,21 @@
 	{
 		"title": "L’Exposition nationale canadienne à Toronto",
 		"caption": "C'est reparti pour un tour!",
-		"subtitle": null,
+		"subtitle": "L’Exposition nationale canadienne 2026",
 		"copyright": "© Wirestock/Getty Images",
-		"description": "À l’heure où le ciel se teinte de bleu-gris, les premières notes de musique résonnent dans les allées et annoncent le retour de l’Exposition nationale canadienne. Née en 1879 sous le nom de l’Exposition industrielle de Toronto, elle réunissait agriculteurs, créateurs et artisans venus partager leurs savoir-faire. Aujourd’hui encore, cette rencontre entre tradition, innovation et découvertes façonne l’esprit du site.",
+		"description": "À l’heure où le ciel se teinte de bleu-gris, les premières notes de musique résonnent dans les allées et annoncent le retour de l’Exposition nationale canadienne. Née en 1879 sous le nom de l’Exposition industrielle de Toronto, elle réunissait agriculteurs, créateurs et artisans venus partager leurs savoir-faire. Aujourd’hui encore, cette rencontre entre tradition, innovation et découvertes façonne l’esprit du site.\nLors d’une première visite, il est difficile de résister au grand toboggan qui domine les lieux. Puis viennent les balançoires, les jeux d’adresse, les spectacles et les pavillons présentant inventions et démonstrations. Les parfums de poutine, de saucisses sur bâtonnets, de tartelettes au beurre et de crème glacée flottent dans l’air, attirant les foules, tandis que d’audacieuses créations culinaires surprennent les gourmands. Au bord du lac Ontario, le Salon aéronautique international du Canada anime aussi le rivage torontois du 5 au 7 septembre.\nQuand la nuit tombe, les lumières s’allument, les manèges resplendissent et l’atmosphère célèbre pleinement la fin de l’été.",
 		"date": "2026-08-21",
 		"bing_url": "https://bing.com/th?id=OHR.CanadaNE_FR-CA5981626201_UHD.jpg",
 		"url": "api/images/CA/fr/2026-08-21.jpg"
+	},
+	{
+		"title": "Argus bleu, Devon, Angleterre",
+		"caption": "De délicates ailes azur",
+		"subtitle": null,
+		"copyright": "© Ross Hoddinott/Nature Picture Library",
+		"description": "Un éclair bleu traverse une prairie en fleurs, puis disparaît presque aussitôt. Derrière cette apparition fugace se cache pourtant un cycle de vie remarquable. Répandu dans une grande partie de l’Europe, en Afrique du Nord et dans certaines régions d’Asie, l’Argus bleu, aussi appelé Azuré commun (Polyommatus icarus), commence son cycle sous la forme d’un minuscule œuf déposé sur des plantes nourricières comme le lotier corniculé. Après l’éclosion, la chenille se nourrit de feuilles, grandissant à l’abri des regards dans un paysage animé d’insectes et de floraisons.",
+		"date": "2026-08-22",
+		"bing_url": "https://bing.com/th?id=OHR.CommonBlue_FR-CA6957827229_UHD.jpg",
+		"url": "api/images/CA/fr/2026-08-22.jpg"
 	}
 ]

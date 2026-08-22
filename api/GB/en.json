@@ -8712,11 +8712,21 @@
 	{
 		"title": "Winding road of Julier Pass, Switzerland",
 		"caption": "The climb is calling",
-		"subtitle": null,
+		"subtitle": "Winding road of Julier Pass, Switzerland",
 		"copyright": "© Westend61/Getty Images",
-		"description": "Some mountain roads become destinations in their own right, and Julier Pass is one of them. Rising to 2,284 metres, this Swiss mountain pass has connected Alpine valleys for nearly 2,000 years. Long before modern traffic, Roman travellers, merchants and messengers crossed its heights. Archaeological discoveries, including hundreds of Roman coins and the remains of two stone columns, suggest there was once a sanctuary or resting place for those making the climb. The summit also marks the major European watershed dividing the Rhine and Danube river basins.",
+		"description": "Some mountain roads become destinations in their own right, and Julier Pass is one of them. Rising to 2,284 metres, this Swiss mountain pass has connected Alpine valleys for nearly 2,000 years. Long before modern traffic, Roman travellers, merchants and messengers crossed its heights. Archaeological discoveries, including hundreds of Roman coins and the remains of two stone columns, suggest there was once a sanctuary or resting place for those making the climb. The summit also marks the major European watershed dividing the Rhine and Danube river basins.\nThe road seen in today's image was built between 1820 and 1828. Between 1935 and 1940, Julier Pass became the first Swiss alpine pass road to be paved with asphalt. Unlike many high mountain routes, it remains open throughout the year, although snow chains may be needed in severe winter conditions. Every switchback reveals another spectacular view, making the journey every bit as memorable as the destination.",
 		"date": "2026-08-21",
 		"bing_url": "https://bing.com/th?id=OHR.JulierPass_EN-GB1060938084_UHD.jpg",
 		"url": "api/images/GB/en/2026-08-21.jpg"
+	},
+	{
+		"title": "Common blue butterfly, Devon, England",
+		"caption": "Sky tinted wings",
+		"subtitle": null,
+		"copyright": "© Ross Hoddinott/Nature Picture Library",
+		"description": "That quick glimpse of blue fluttering through a field has a story that begins much earlier, with a tiny caterpillar and an unexpected partnership. The common blue butterfly (Polyommatus icarus), named after Icarus, the figure from Greek mythology, is found across Europe, North Africa and parts of Asia. It begins life as an egg laid on host plants such as common bird's-foot trefoil. After hatching, the caterpillar feeds on the leaves before producing a sugary substance that attracts ants. In return for this sweet reward, the ants often protect the developing caterpillar from predators during one of the most vulnerable stages of its life. Depending on the climate, the species can produce two or three generations between spring and autumn.",
+		"date": "2026-08-22",
+		"bing_url": "https://bing.com/th?id=OHR.CommonBlue_EN-GB1147628721_UHD.jpg",
+		"url": "api/images/GB/en/2026-08-22.jpg"
 	}
 ]
